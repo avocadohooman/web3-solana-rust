@@ -146,11 +146,30 @@ const App = () => {
 			} catch (error) {
 				console.log("Error sending GIF:", error)
 			}
-			setGifList([...gifList, inputValue]);
+			// setGifList([...gifList, inputValue]);
 			setInputValue('');
 		}
 		console.log("No gif link given!")
 		return ;	
+	}
+
+	const upvoteGif = async (gifLink) => {
+		console.log('gif link', gifLink);
+		try {
+			const provider = getProvider();
+			const program = new Program(idl, programID, provider);
+
+			await program.rpc.upvote(gifLink, {
+				accounts: {
+					baseAccount: baseAccount.publicKey,
+					user: provider.wallet.publicKey,
+				},
+			});
+			console.log("GIF successfully upvoted")
+			await getGifList();			
+		} catch (error) {
+			console.log("Error sending GIF:", error)
+		}
 	}
 
 	/*
@@ -185,7 +204,9 @@ const App = () => {
 				{gifList.map((gif, idx) => (
 					<div className="gif-item" key={idx}>
 						<img src={gif.gifLink} alt={gif} />
-						<p style={{color: 'white'}}>User: {gif.userAddress.toString()}</p>
+						<p style={{color: 'white'}}>Total Votes: {gif.totalVotes.toNumber()}</p>
+						<button className='cta-button submit-gif-button' onClick={() => upvoteGif(gif.gifLink)}>Upvote</button>
+						<p style={{color: 'white'}}>Author: {gif.userAddress.toString()}</p>
 					</div>
 				))}
 				</div>

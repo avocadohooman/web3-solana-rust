@@ -25,10 +25,18 @@ pub mod solanaproject {
 		let item = ItemStruct {
 			gif_link: gif_link.to_string(),
 			user_address: *user.to_account_info().key,
+			total_votes: 0,
 		};
 		// Add item to the gif_list vector
 		base_account.gif_list.push(item);
 		base_account.total_gifs += 1;
+		Ok(())
+	}
+
+	pub fn upvote(ctx: Context<AddGif>, gif_link: String) -> ProgramResult {
+		let base_account = &mut ctx.accounts.base_account;
+		let gif_index = base_account.gif_list.iter().position(|r| r.gif_link == gif_link).unwrap();
+		base_account.gif_list[gif_index].total_votes += 1;
 		Ok(())
 	}
 }
@@ -78,6 +86,7 @@ pub struct AddGif<'info> {
 pub struct ItemStruct {
 	pub gif_link: String,
 	pub user_address: Pubkey,
+	pub total_votes: u64,
 }
 
 // Tell Solana what we want to store on this account.
