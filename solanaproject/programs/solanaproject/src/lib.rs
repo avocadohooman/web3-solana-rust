@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("Ea1QtZbkJhs7ze4uttFZ91r227Fsq6ZFPoeZE1BhggxW");
 
 #[program]
 pub mod solanaproject {
@@ -17,8 +17,17 @@ pub mod solanaproject {
 		Ok(())
 	}
 
-	pub fn add_gif(ctx: Context<AddGif>) -> ProgramResult {
+	pub fn add_gif(ctx: Context<AddGif>, gif_link: String) -> ProgramResult {
 		let base_account = &mut ctx.accounts.base_account;
+		let user = &mut ctx.accounts.user;
+
+		// Build a struct
+		let item = ItemStruct {
+			gif_link: gif_link.to_string(),
+			user_address: *user.to_account_info().key,
+		};
+		// Add item to the gif_list vector
+		base_account.gif_list.push(item);
 		base_account.total_gifs += 1;
 		Ok(())
 	}
@@ -53,11 +62,28 @@ pub struct AddGif<'info> {
 		value stored on BaseAccount.
 	*/
 	#[account(mut)]
-	pub base_account: Account<'info, BaseAccount>
+	pub base_account: Account<'info, BaseAccount>,
+	#[account(mut)]
+	pub user: Signer<'info>,
+}
+
+// Create a custom struct for us to work with
+/*
+	It's a little complex, but, basically this tells Anchor how to serialize/deserialize the struct. 
+	Remember, data is being stored in an "account" right? That account is basically a file and we 
+	serialize our data into binary format before storing it. Then, when we want to retrieve it we'll 
+	actually deserialize it.
+*/
+#[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
+pub struct ItemStruct {
+	pub gif_link: String,
+	pub user_address: Pubkey,
 }
 
 // Tell Solana what we want to store on this account.
 #[account]
 pub struct BaseAccount {
 	pub total_gifs: u64,
+	// basically an array
+	pub gif_list: Vec<ItemStruct>,
 }
