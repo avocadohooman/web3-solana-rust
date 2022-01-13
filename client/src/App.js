@@ -184,7 +184,8 @@ const App = () => {
 				<div className="gif-grid">
 				{gifList.map((gif, idx) => (
 					<div className="gif-item" key={idx}>
-					<img src={gif.gifLink} alt={gif} />
+						<img src={gif.gifLink} alt={gif} />
+						<p style={{color: 'white'}}>User: {gif.userAddress.toString()}</p>
 					</div>
 				))}
 				</div>
